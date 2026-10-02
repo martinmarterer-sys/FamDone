@@ -347,7 +347,7 @@
 
     function renderFamilyFilters() {
       const counts = Object.fromEntries(FAMILY.map(p => [p, 0]));
-      state.tasks.filter(isTaskActive).forEach(task => {
+      state.tasks.filter(task => isTaskActive(task)).forEach(task => {
         if (!getTaskStatus(task).done) task.assignees.forEach(p => { if (p in counts) counts[p]++; });
       });
       const totalOpen = state.tasks.filter(t => isTaskActive(t) && !getTaskStatus(t).done).length;
@@ -362,7 +362,7 @@
     }
 
     function renderSummary() {
-      const active = state.tasks.filter(isTaskActive);
+      const active = state.tasks.filter(task => isTaskActive(task));
       const done = active.filter(t => getTaskStatus(t).done).length;
       refs.openCount.textContent = String(active.length - done);
       refs.doneCount.textContent = String(done);
@@ -371,7 +371,7 @@
 
     function getFilteredTasks() {
       return state.tasks
-        .filter(isTaskActive)
+        .filter(task => isTaskActive(task))
         .filter(t => state.personFilter === "Alle" || t.assignees.includes(state.personFilter))
         .filter(t => state.statusFilter === "all" || (state.statusFilter === "done" ? getTaskStatus(t).done : !getTaskStatus(t).done))
         .sort((a,b) => {
