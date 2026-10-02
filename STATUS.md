@@ -15,58 +15,66 @@ Sie soll regelmäßig aktualisiert werden und festhalten:
 ### Bereits fertig
 
 - Projektname festgelegt: **FamDone**
-- Grundidee der Web-App definiert
+- Grundidee und Zweck der Web-App definiert
 - Zielgruppe festgelegt:
   - Mama
   - Papa
   - Mina
   - Karl
-- Zweck der Anwendung beschrieben
-- Rollenmodell festgelegt:
+- Rollenmodell umgesetzt:
   - Admin-Zugang für die Eltern
   - normaler Zugang für alle Familienmitglieder
-- Grundfunktionen beschrieben:
-  - Aufgaben erstellen
-  - Verantwortliche zuweisen
-  - einmalige Aufgaben mit Datum
-  - wiederkehrende Aufgaben
-  - Aufgaben abhaken
-  - Datum und Uhrzeit der Erledigung speichern
-- Grunddesign festgelegt:
-  - Minecraft-inspiriert
-  - eigenständiger Stil ohne originale Minecraft-Assets
-- Technische Grundregeln definiert
+- Erste funktionsfähige Web-App als `index.html` erstellt
+- Web-App über GitHub Pages veröffentlicht
+- komplette Benutzeroberfläche auf Deutsch umgesetzt
+- Minecraft-inspirierter, eigenständiger Stil umgesetzt
+- responsive Grunddarstellung für Desktop, Tablet und Smartphone umgesetzt
+- Admin-Bereich mit Passwortschutz umgesetzt
+- Aufgaben können erstellt werden
+- Aufgaben können bearbeitet werden
+- Aufgaben können gelöscht werden
+- Verantwortliche können ausgewählt werden
+- einmalige Aufgaben werden unterstützt
+- tägliche Wiederholungen werden unterstützt
+- wöchentliche Wiederholungen werden unterstützt
+- monatliche Wiederholungen werden unterstützt
+- Aufgaben können von den zugeordneten Familienmitgliedern bestätigt werden
+- bei mehreren Verantwortlichen wird angezeigt, wer bereits bestätigt hat und wer noch fehlt
+- eine Aufgabe gilt erst als erledigt, wenn alle notwendigen Bestätigungen erfolgt sind
+- Datum und Uhrzeit einer Bestätigung werden gespeichert und angezeigt
+- Daten werden lokal im Browser über `localStorage` gespeichert
+- Filter nach Familienmitglied und Aufgabenstatus sind vorhanden
 - `README.md` erstellt
 - `REGELN.md` erstellt
 - `STATUS.md` erstellt
+- `IDEEN.md` erstellt
 
-### Noch nicht umgesetzt
+### Behobener Fehler in dieser Version
 
-- eigentliche Web-App
-- Benutzeroberfläche
-- Admin-Bereich
-- Aufgabenverwaltung
-- Wiederholungslogik
-- Speicherung der Daten
-- Bestätigungslogik
-- responsive Darstellung
-- Tests auf Desktop, Tablet und Smartphone
+Beim ersten Test der Web-App trat folgender Fehler auf:
+
+- Nach dem Anlegen einer Aufgabe wurde die Aufgabe scheinbar nicht gespeichert bzw. nicht korrekt angezeigt.
+- Nach der Eingabe einer Aufgabe brach die Darstellung teilweise ab, sodass der Admin-Bereich anschließend nicht mehr normal genutzt werden konnte.
+
+**Ursache:**  
+Die Funktion `isTaskActive` wurde an drei Stellen direkt an `Array.filter()` übergeben. `filter()` übergibt neben der Aufgabe zusätzlich den Array-Index. Dieser Index wurde von `isTaskActive` fälschlich als Datumswert verwendet. Sobald mindestens eine Aufgabe vorhanden war, konnte dadurch ein JavaScript-Fehler entstehen und die weitere Darstellung abbrechen.
+
+**Korrektur:**  
+Die drei Filteraufrufe verwenden jetzt jeweils eine eigene Callback-Funktion und übergeben ausschließlich die Aufgabe an `isTaskActive`. Dadurch bleibt der vorgesehene Datums-Standardwert erhalten.
 
 ---
 
 ## 2. Woran aktuell gearbeitet wird
 
-Aktuell befindet sich FamDone noch in der **Planungs- und Strukturierungsphase**.
+FamDone befindet sich jetzt in der **ersten Test- und Fehlerbehebungsphase**.
 
-Der Schwerpunkt liegt momentan auf:
+Der Schwerpunkt liegt aktuell auf:
 
-- klaren Anforderungen
-- dauerhaften Entwicklungsregeln
-- Definition der Funktionen
-- Festlegung der technischen Rahmenbedingungen
-- Vorbereitung für die eigentliche Umsetzung der Web-App
-
-Der eigentliche Programmcode der Anwendung wurde noch nicht erstellt.
+- praktischem Testen der bereits vorhandenen Funktionen
+- Beheben einzelner Fehler nach dem Kursprinzip „eine Sache verbessern“
+- Sicherstellen, dass Aufgaben zuverlässig angelegt und gespeichert werden
+- Sicherstellen, dass der Admin-Bereich nach dem Speichern weiterhin nutzbar bleibt
+- Prüfen, ob gespeicherte Daten nach einem Neuladen erhalten bleiben
 
 ---
 
@@ -74,25 +82,23 @@ Der eigentliche Programmcode der Anwendung wurde noch nicht erstellt.
 
 ### Technische Entscheidungen
 
-- FamDone wird als **Web-App** umgesetzt.
-- Die Anwendung soll grundsätzlich aus **einer einzigen HTML-Datei** bestehen.
-- HTML, CSS und JavaScript werden in dieser Datei eingebettet.
-- Es werden keine externen Bibliotheken oder Frameworks verwendet.
+- FamDone bleibt eine **Web-App in einer einzigen HTML-Datei**.
+- HTML, CSS und JavaScript bleiben vollständig in `index.html` eingebettet.
+- Es werden keine externen Bibliotheken, Frameworks oder CDNs verwendet.
 - Es werden keine zusätzlichen CSS- oder JavaScript-Dateien benötigt.
-- Die Anwendung soll direkt im Browser funktionieren.
-- Die Daten werden zunächst lokal im Browser gespeichert.
-- Für die Speicherung soll bevorzugt `localStorage` verwendet werden.
-- Ein Backend oder eine externe Datenbank wird vorerst nicht verwendet.
+- Die Daten werden lokal im Browser gespeichert.
+- Für die Speicherung wird `localStorage` verwendet.
+- Ein Backend oder eine externe Datenbank wird vorerst nicht eingesetzt.
+- Bestehende funktionierende Bereiche werden bei Fehlerkorrekturen möglichst nicht verändert.
 
 ### Sprachliche Entscheidungen
 
-- Die gesamte Oberfläche ist auf **Deutsch**.
-- Die Texte sollen einfach und familienfreundlich formuliert sein.
-- Die Bedienung soll auch für Kinder verständlich sein.
+- Die gesamte Oberfläche bleibt auf **Deutsch**.
+- Texte sollen einfach, familienfreundlich und auch für Kinder verständlich sein.
 
 ### Nutzer und Rollen
 
-- Es gibt vier Familienmitglieder:
+- Familienmitglieder:
   - Mama
   - Papa
   - Mina
@@ -101,7 +107,7 @@ Der eigentliche Programmcode der Anwendung wurde noch nicht erstellt.
 - Der Admin-Bereich wird durch ein Passwort geschützt.
 - Das Admin-Passwort ist nur für die Eltern gedacht.
 - Normale Nutzer benötigen kein Passwort.
-- Normale Nutzer dürfen Aufgaben ansehen und abhaken.
+- Normale Nutzer dürfen Aufgaben ansehen und bestätigen.
 
 ### Aufgabenlogik
 
@@ -112,7 +118,7 @@ Aufgaben können:
 - wöchentlich wiederholt werden
 - monatlich wiederholt werden
 
-Jede Aufgabe soll mindestens enthalten:
+Jede Aufgabe enthält mindestens:
 
 - Titel
 - verantwortliche Person oder Personen
@@ -120,102 +126,88 @@ Jede Aufgabe soll mindestens enthalten:
 - optional ein Datum
 - optional eine Wiederholung
 
-Beim Abhaken werden automatisch gespeichert:
+Beim Bestätigen werden automatisch gespeichert:
 
 - Datum
 - Uhrzeit
 
-Wenn mehrere Personen eine Aufgabe bestätigen müssen, soll sichtbar sein:
+Wenn mehrere Personen eine Aufgabe bestätigen müssen, wird sichtbar:
 
 - wer bereits bestätigt hat
 - wer noch bestätigen muss
 
-Eine solche Aufgabe gilt erst als vollständig erledigt, wenn alle notwendigen Bestätigungen erfolgt sind.
+Eine Aufgabe gilt erst als vollständig erledigt, wenn alle vorgesehenen Bestätigungen erfolgt sind.
 
 ### Designentscheidung
 
-- Der Look soll sich an Minecraft orientieren.
-- Das Design bleibt jedoch eigenständig.
-- Keine originalen Minecraft-Grafiken, Logos, Texturen oder anderen geschützten Inhalte werden übernommen.
-- Der Stil soll blockartig, spielerisch und gut lesbar sein.
-- Die Benutzerfreundlichkeit hat Vorrang vor Dekoration.
+- Der Look bleibt Minecraft-inspiriert.
+- Das Design bleibt eigenständig.
+- Es werden keine originalen Minecraft-Grafiken, Logos, Texturen oder Sounds verwendet.
+- Lesbarkeit und Bedienbarkeit haben Vorrang vor Dekoration.
 
 ---
 
-## 4. Offene Punkte
+## 4. Aktuell zu prüfen
 
-Folgende Punkte müssen im weiteren Projektverlauf noch konkret entschieden oder umgesetzt werden:
+Nach Einspielen der korrigierten `index.html` sollen gezielt folgende Punkte getestet werden:
 
-- genaue Struktur der Startseite
-- genaue Darstellung der Familienmitglieder
-- Darstellung offener und erledigter Aufgaben
-- Aufbau des Admin-Bereichs
-- Auswahl und Änderung des Admin-Passworts
-- genaue Wiederholungslogik
-- Umgang mit überfälligen Aufgaben
-- Möglichkeit, Aufgaben nachträglich zu bearbeiten
-- Verhalten beim Löschen einer Aufgabe
-- genaue Darstellung der Bestätigungen
-- Sortierung und Filterung der Aufgaben
-- Speicherung von erledigten Aufgaben
-- Möglichkeit eines Verlaufs oder Archivs
-- Verhalten bei einem neuen Tag
-- Verhalten bei wöchentlichen und monatlichen Wiederholungen
+1. Admin-Bereich öffnen.
+2. Neue Aufgabe anlegen.
+3. Prüfen, ob die Aufgabe sofort in der Übersicht erscheint.
+4. Prüfen, ob der Admin-Bereich nach dem Speichern weiterhin sichtbar und nutzbar bleibt.
+5. Direkt eine zweite Aufgabe anlegen.
+6. Seite neu laden.
+7. Prüfen, ob beide Aufgaben noch vorhanden sind.
+8. Eine Aufgabe bearbeiten.
+9. Eine Aufgabe löschen.
+10. Eine Aufgabe bestätigen und prüfen, ob Datum und Uhrzeit angezeigt werden.
+
+---
+
+## 5. Noch offene Punkte
+
+Folgende Punkte sollen im weiteren Projektverlauf noch getestet, entschieden oder später umgesetzt werden:
+
+- vollständiger Test der täglichen Wiederholung über einen Tageswechsel
+- vollständiger Test der wöchentlichen Wiederholung über einen Wochenwechsel
+- vollständiger Test der monatlichen Wiederholung über einen Monatswechsel
+- Verhalten bei zukünftigen einmaligen Aufgaben
+- Verhalten bei überfälligen Aufgaben
+- langfristiger Verlauf oder Archiv für erledigte Aufgaben
 - Datensicherung oder Exportmöglichkeit
-- eventuell spätere Erweiterung um echtes Login und Backend
+- später eventuell Nutzung auf mehreren Geräten mit gemeinsamem Datenstand
+- später eventuell echtes Login und Backend
+- weitere Ideen aus `IDEEN.md`
 
 ---
 
-## 5. Als Nächstes
+## 6. Als Nächstes
 
-Der nächste sinnvolle Schritt ist die Erstellung einer ersten funktionsfähigen Version der Web-App.
+Der nächste Schritt ist **nicht sofort eine neue Funktion**, sondern zuerst der erneute Test der korrigierten Version.
 
-### Geplante Reihenfolge
+Wenn der Fehler behoben ist:
 
-1. Grundlayout der Web-App erstellen
-2. Minecraft-inspiriertes Design umsetzen
-3. Familienübersicht einbauen
-4. Aufgabenliste anzeigen
-5. Admin-Modus erstellen
-6. Aufgaben anlegen können
-7. Verantwortliche auswählen können
-8. einmalige und wiederkehrende Aufgaben unterstützen
-9. Aufgaben abhaken können
-10. Datum und Uhrzeit automatisch speichern
-11. Bestätigungslogik umsetzen
-12. Daten mit `localStorage` speichern
-13. Darstellung für Smartphone und Tablet optimieren
-14. Funktionen testen
-15. Fehler beheben
-16. `README.md`, `REGELN.md` und `STATUS.md` aktualisieren
-
----
-
-## 6. Ziel der nächsten Version
-
-Die erste funktionsfähige Version von FamDone soll mindestens Folgendes ermöglichen:
-
-- Start der Anwendung direkt im Browser
-- Anzeige aller Familienmitglieder
-- Anzeige offener Aufgaben
-- Erstellen neuer Aufgaben im Admin-Modus
-- Zuweisen von Verantwortlichen
-- Festlegen von einmaligen oder wiederkehrenden Aufgaben
-- Abhaken von Aufgaben
-- automatische Speicherung von Datum und Uhrzeit
-- lokale Speicherung der Daten
-- verständliche Anzeige des aktuellen Erledigungsstatus
+1. korrigierte `index.html` in GitHub übernehmen
+2. `STATUS.md` in GitHub aktualisieren
+3. Änderungen committen
+4. GitHub Pages kurz aktualisieren lassen
+5. Web-App neu laden
+6. Aufgabenanlage erneut testen
+7. bei einem weiteren Problem wieder genau einen Fehler oder Verbesserungswunsch bearbeiten
 
 ---
 
 ## 7. Statusübersicht
 
-**Projektphase:** Planung / Vorbereitung  
-**Web-App programmiert:** Nein  
+**Projektphase:** Erste Test- und Fehlerbehebungsphase  
+**Web-App programmiert:** Ja  
+**Über GitHub Pages veröffentlicht:** Ja  
 **README vorhanden:** Ja  
 **Dauerregeln vorhanden:** Ja  
 **Statusdatei vorhanden:** Ja  
-**Grundfunktionen definiert:** Ja  
-**Designrichtung definiert:** Ja  
-**Technische Basis entschieden:** Ja  
-**Nächster Schritt:** Erste funktionsfähige HTML-Version von FamDone erstellen
+**Ideensammlung vorhanden:** Ja  
+**Admin-Bereich vorhanden:** Ja  
+**Aufgabenverwaltung vorhanden:** Ja  
+**Lokale Datenspeicherung vorhanden:** Ja  
+**Aktuell behobener Fehler:** Aufgabenanlage verursachte JavaScript-Abbruch durch falsche Verwendung von `isTaskActive` als `filter()`-Callback  
+**Nächster Schritt:** Korrigierte Version in GitHub übernehmen und Aufgabenanlage erneut testen
