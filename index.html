@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>FamDone – Familien-To-do-Liste</title>
+  <style>
+    :root {
+      --bg:#d9e7c8;--bg-deep:#b8cf9a;--panel:#f7f3df;--panel-2:#fffdf2;
+      --ink:#1f2a1f;--muted:#5f6f5c;--line:#2f472a;--grass:#5f8f3f;
+      --grass-dark:#41672b;--earth:#8a6546;--earth-dark:#5f4532;--gold:#d8aa38;
+      --danger:#a74334;--danger-dark:#7c2f25;--info:#3a6f87;
+      --shadow:0 5px 0 rgba(47,71,42,.24);--radius:4px;--focus:0 0 0 4px rgba(58,111,135,.25)
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    body{margin:0;min-height:100vh;color:var(--ink);background:
+      linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px),
+      linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),
+      linear-gradient(180deg,var(--bg) 0%,var(--bg-deep) 100%);
+      background-size:24px 24px,24px 24px,auto;font-family:"Segoe UI",Arial,sans-serif;line-height:1.45}
+    button,input,select{font:inherit}
+    button{min-height:44px;border:2px solid var(--line);border-radius:var(--radius);background:var(--panel-2);color:var(--ink);box-shadow:0 3px 0 rgba(47,71,42,.2);cursor:pointer}
+    button:hover{background:#f0efd8} button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(47,71,42,.2)}
+    button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:var(--focus)}
+    .btn-primary{background:var(--grass);color:#fff;border-color:var(--grass-dark)}
+    .btn-primary:hover{background:var(--grass-dark)}
+    .btn-secondary{background:#e6e1c8}.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger-dark)}
+    .btn-danger:hover{background:var(--danger-dark)}.btn-small{min-height:38px;padding:7px 10px;font-size:.93rem}
+    .app-shell{width:min(1180px,calc(100% - 24px));margin:0 auto;padding:18px 0 40px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 16px;background:var(--panel);border:3px solid var(--line);box-shadow:var(--shadow)}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand-mark{display:grid;place-items:center;width:48px;height:48px;flex:0 0 auto;background:linear-gradient(90deg,var(--grass) 50%,var(--earth) 50%);border:3px solid var(--line);font-weight:900;color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.3)}
+    .brand h1{margin:0;font-size:clamp(1.4rem,3vw,2rem)} .brand p{margin:2px 0 0;color:var(--muted);font-size:.93rem}
+    .top-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+    .status-banner{margin-top:14px;min-height:48px;display:none;align-items:center;padding:10px 14px;border:2px solid var(--line);background:var(--panel-2);box-shadow:var(--shadow)}
+    .status-banner.show{display:flex}.status-banner.success{border-color:var(--grass-dark);background:#edf6df}.status-banner.error{border-color:var(--danger-dark);background:#f9e5e1}.status-banner.info{border-color:var(--info);background:#e8f2f6}
+    .dashboard{margin-top:18px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:18px;align-items:start}
+    .panel{background:var(--panel);border:3px solid var(--line);box-shadow:var(--shadow)}
+    .panel-header{padding:13px 14px;border-bottom:3px solid var(--line);background:linear-gradient(180deg,#f4efd7,#e6dfbf)}
+    .panel-header h2,.panel-header h3{margin:0}.panel-body{padding:14px}
+    .family-list{display:grid;gap:9px}.family-filter{width:100%;text-align:left;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .family-filter.active{background:var(--grass);color:#fff;border-color:var(--grass-dark)}
+    .family-count{min-width:28px;text-align:center;padding:2px 7px;border:2px solid currentColor;border-radius:999px;font-weight:700;font-size:.85rem}
+    .summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+    .summary-card{padding:12px;background:var(--panel-2);border:2px solid var(--line);text-align:center}
+    .summary-card strong{display:block;font-size:1.6rem;line-height:1;margin-bottom:4px}
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .filter-group{display:flex;flex-wrap:wrap;gap:7px}.filter-btn{padding:8px 11px}.filter-btn.active{background:var(--earth);color:#fff;border-color:var(--earth-dark)}
+    .today-label{color:var(--muted);font-size:.95rem}.task-list{display:grid;gap:12px}
+    .task-card{position:relative;padding:14px;background:var(--panel-2);border:3px solid var(--line);overflow:hidden}
+    .task-card.done{background:#e7efda;border-color:var(--grass-dark)}.task-card.overdue:not(.done){border-color:var(--danger-dark)}
+    .task-card::before{content:"";position:absolute;inset:0 auto 0 0;width:7px;background:var(--grass)}
+    .task-card.overdue:not(.done)::before{background:var(--danger)}.task-card.done::before{background:var(--grass-dark)}
+    .task-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-left:4px}
+    .task-title{margin:0;font-size:1.15rem}.task-meta{margin:5px 0 0;display:flex;flex-wrap:wrap;gap:6px 10px;color:var(--muted);font-size:.9rem}
+    .badge{display:inline-flex;align-items:center;min-height:28px;padding:3px 8px;border:2px solid var(--line);background:#efe8c9;font-size:.83rem;font-weight:700}
+    .badge.done{background:#cfe2ba;border-color:var(--grass-dark)}.badge.overdue{background:#f1c8c1;border-color:var(--danger-dark)}
+    .confirmations{margin-top:12px;padding-top:11px;border-top:2px dashed rgba(47,71,42,.35)}.confirmations-title{margin:0 0 8px;font-weight:700;font-size:.95rem}
+    .person-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+    .person-state{min-width:0;border:2px solid var(--line);padding:8px;background:#f6f1d9}.person-state.confirmed{background:#dcebc8;border-color:var(--grass-dark)}
+    .person-state strong{display:block;margin-bottom:5px}.person-state small{display:block;min-height:34px;color:var(--muted);margin-bottom:6px}.person-state button{width:100%}
+    .empty-state{padding:24px;text-align:center;border:2px dashed var(--line);background:rgba(255,255,255,.38);color:var(--muted)}
+    .admin-panel{display:none;margin-top:18px}.admin-panel.visible{display:block}.admin-layout{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:16px}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px}.field.full{grid-column:1/-1}label,.field-label{font-weight:700}
+    input[type="text"],input[type="password"],input[type="date"],select{width:100%;min-height:44px;border:2px solid var(--line);border-radius:var(--radius);padding:9px 10px;background:#fffef8;color:var(--ink)}
+    .checkbox-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.check-option{display:flex;gap:8px;align-items:center;min-height:44px;padding:8px 10px;border:2px solid var(--line);background:#fffef8;cursor:pointer}
+    .check-option input{width:20px;height:20px;accent-color:var(--grass)}.form-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .admin-task-list{display:grid;gap:8px}.admin-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border:2px solid var(--line);background:var(--panel-2)}
+    .admin-row p{margin:3px 0 0;color:var(--muted);font-size:.9rem}.admin-row-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+    dialog{width:min(520px,calc(100% - 24px));border:3px solid var(--line);border-radius:0;padding:0;background:var(--panel);color:var(--ink);box-shadow:0 10px 0 rgba(47,71,42,.28)}
+    dialog::backdrop{background:rgba(27,37,27,.62)}.dialog-head{padding:13px 14px;border-bottom:3px solid var(--line);background:#e9e1bf}.dialog-head h2{margin:0;font-size:1.25rem}.dialog-body{padding:14px}
+    .security-note{padding:10px;border:2px solid var(--gold);background:#fff3c9;font-size:.92rem}.footer-note{margin-top:18px;padding:10px 12px;color:var(--muted);text-align:center;font-size:.88rem}
+    @media(max-width:900px){.dashboard,.admin-layout{grid-template-columns:1fr}.family-list{grid-template-columns:repeat(5,minmax(0,1fr))}.family-filter{justify-content:center;text-align:center;flex-direction:column}}
+    @media(max-width:700px){.app-shell{width:min(100% - 14px,1180px);padding-top:8px}.topbar{align-items:stretch;flex-direction:column}.top-actions{justify-content:stretch}.top-actions button{flex:1 1 150px}.family-list{grid-template-columns:repeat(2,minmax(0,1fr))}.family-list .family-filter:first-child{grid-column:1/-1}.summary-grid,.form-grid{grid-template-columns:1fr}.task-head{flex-direction:column}.admin-row{grid-template-columns:1fr}.admin-row-actions{justify-content:stretch}.admin-row-actions button{flex:1}}
+    @media(max-width:430px){.checkbox-grid,.person-actions{grid-template-columns:1fr}.toolbar{align-items:stretch}.filter-group,.filter-group button{width:100%}.filter-group button{flex:1}}
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">FD</div>
+        <div>
+          <h1>FamDone</h1>
+          <p>Gemeinsam erledigt. Gemeinsam im Blick.</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="adminButton" class="btn-secondary" type="button">Admin-Bereich</button>
+        <button id="logoutButton" class="btn-danger" type="button" hidden>Admin beenden</button>
+      </div>
+    </header>
+
+    <div id="statusBanner" class="status-banner" role="status" aria-live="polite"></div>
+
+    <main>
+      <section class="dashboard" aria-label="Aufgabenübersicht">
+        <aside class="panel">
+          <div class="panel-header"><h2>Familie</h2></div>
+          <div class="panel-body"><div id="familyFilters" class="family-list"></div></div>
+        </aside>
+
+        <section class="panel">
+          <div class="panel-header"><h2>Unsere Aufgaben</h2></div>
+          <div class="panel-body">
+            <div class="summary-grid">
+              <div class="summary-card"><strong id="openCount">0</strong><span>offen</span></div>
+              <div class="summary-card"><strong id="doneCount">0</strong><span>erledigt</span></div>
+              <div class="summary-card"><strong id="allCount">0</strong><span>gesamt</span></div>
+            </div>
+
+            <div class="toolbar">
+              <div class="filter-group" aria-label="Aufgaben filtern">
+                <button class="filter-btn active" data-status-filter="open" type="button">Offen</button>
+                <button class="filter-btn" data-status-filter="done" type="button">Erledigt</button>
+                <button class="filter-btn" data-status-filter="all" type="button">Alle</button>
+              </div>
+              <div id="todayLabel" class="today-label"></div>
+            </div>
+
+            <div id="taskList" class="task-list"></div>
+          </div>
+        </section>
+      </section>
+
+      <section id="adminPanel" class="panel admin-panel" aria-label="Admin-Bereich">
+        <div class="panel-header"><h2>Admin-Bereich</h2></div>
+        <div class="panel-body">
+          <div class="admin-layout">
+            <section>
+              <h3 id="formTitle">Neue Aufgabe anlegen</h3>
+              <form id="taskForm" autocomplete="off">
+                <input type="hidden" id="taskId">
+                <div class="form-grid">
+                  <div class="field full">
+                    <label for="taskTitle">Aufgabe</label>
+                    <input id="taskTitle" type="text" maxlength="100" required placeholder="z. B. Spülmaschine ausräumen">
+                  </div>
+                  <div class="field">
+                    <label for="taskRepeat">Wiederholung</label>
+                    <select id="taskRepeat" required>
+                      <option value="once">Einmalig</option>
+                      <option value="daily">Täglich</option>
+                      <option value="weekly">Wöchentlich</option>
+                      <option value="monthly">Monatlich</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="taskDate">Start / Fälligkeit</label>
+                    <input id="taskDate" type="date">
+                  </div>
+                  <fieldset class="field full" style="border:0;padding:0;margin:0">
+                    <legend class="field-label">Verantwortlich</legend>
+                    <div id="assigneeCheckboxes" class="checkbox-grid"></div>
+                  </fieldset>
+                </div>
+                <div class="form-actions">
+                  <button class="btn-primary" type="submit" id="saveTaskButton">Aufgabe speichern</button>
+                  <button class="btn-secondary" type="button" id="cancelEditButton" hidden>Bearbeiten abbrechen</button>
+                </div>
+              </form>
+            </section>
+
+            <section>
+              <h3>Aufgaben verwalten</h3>
+              <div id="adminTaskList" class="admin-task-list"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer-note">FamDone speichert die Daten nur lokal in diesem Browser. Für den privaten Familiengebrauch.</div>
+    </main>
+  </div>
+
+  <dialog id="adminDialog">
+    <div class="dialog-head"><h2 id="adminDialogTitle">Admin-Zugang</h2></div>
+    <div class="dialog-body">
+      <div id="adminSetupText"></div>
+      <form id="adminLoginForm" autocomplete="off">
+        <div class="field">
+          <label for="adminPassword">Passwort</label>
+          <input id="adminPassword" type="password" minlength="4" required>
+        </div>
+        <div id="confirmPasswordField" class="field" hidden style="margin-top:10px">
+          <label for="adminPasswordConfirm">Passwort wiederholen</label>
+          <input id="adminPasswordConfirm" type="password" minlength="4">
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" type="submit" id="adminSubmitButton">Anmelden</button>
+          <button class="btn-secondary" type="button" id="closeAdminDialog">Abbrechen</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script>
+    "use strict";
+
+    const FAMILY = ["Mama", "Papa", "Mina", "Karl"];
+    const STORAGE_KEY = "famdone.tasks.v1";
+    const ADMIN_PASSWORD_KEY = "famdone.adminPassword.v1";
+
+    const state = {
+      tasks: [],
+      personFilter: "Alle",
+      statusFilter: "open",
+      isAdmin: false,
+      editingTaskId: null
+    };
+
+    const refs = {
+      statusBanner: document.getElementById("statusBanner"),
+      familyFilters: document.getElementById("familyFilters"),
+      taskList: document.getElementById("taskList"),
+      adminTaskList: document.getElementById("adminTaskList"),
+      adminPanel: document.getElementById("adminPanel"),
+      adminButton: document.getElementById("adminButton"),
+      logoutButton: document.getElementById("logoutButton"),
+      taskForm: document.getElementById("taskForm"),
+      taskTitle: document.getElementById("taskTitle"),
+      taskRepeat: document.getElementById("taskRepeat"),
+      taskDate: document.getElementById("taskDate"),
+      assigneeCheckboxes: document.getElementById("assigneeCheckboxes"),
+      formTitle: document.getElementById("formTitle"),
+      saveTaskButton: document.getElementById("saveTaskButton"),
+      cancelEditButton: document.getElementById("cancelEditButton"),
+      openCount: document.getElementById("openCount"),
+      doneCount: document.getElementById("doneCount"),
+      allCount: document.getElementById("allCount"),
+      todayLabel: document.getElementById("todayLabel"),
+      adminDialog: document.getElementById("adminDialog"),
+      adminDialogTitle: document.getElementById("adminDialogTitle"),
+      adminSetupText: document.getElementById("adminSetupText"),
+      adminLoginForm: document.getElementById("adminLoginForm"),
+      adminPassword: document.getElementById("adminPassword"),
+      confirmPasswordField: document.getElementById("confirmPasswordField"),
+      adminPasswordConfirm: document.getElementById("adminPasswordConfirm"),
+      adminSubmitButton: document.getElementById("adminSubmitButton"),
+      closeAdminDialog: document.getElementById("closeAdminDialog")
+    };
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function showMessage(message, type = "info") {
+      refs.statusBanner.textContent = message;
+      refs.statusBanner.className = "status-banner show " + type;
+      clearTimeout(showMessage.timer);
+      showMessage.timer = setTimeout(() => {
+        refs.statusBanner.className = "status-banner";
+        refs.statusBanner.textContent = "";
+      }, 4200);
+    }
+
+    function loadTasks() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        state.tasks = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(state.tasks)) state.tasks = [];
+      } catch {
+        state.tasks = [];
+        showMessage("Gespeicherte Aufgaben konnten nicht gelesen werden. Es wird mit einer leeren Liste gestartet.", "error");
+      }
+    }
+
+    function saveTasks() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.tasks));
+    }
+
+    function makeId() {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+      return "task-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+    }
+
+    function pad(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function toLocalDateKey(date = new Date()) {
+      return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+    }
+
+    function getWeekStart(date = new Date()) {
+      const copy = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const day = copy.getDay();
+      copy.setDate(copy.getDate() + (day === 0 ? -6 : 1 - day));
+      return toLocalDateKey(copy);
+    }
+
+    function getCycleKey(task, date = new Date()) {
+      if (task.repeat === "daily") return "daily:" + toLocalDateKey(date);
+      if (task.repeat === "weekly") return "weekly:" + getWeekStart(date);
+      if (task.repeat === "monthly") return "monthly:" + date.getFullYear() + "-" + pad(date.getMonth() + 1);
+      return "once";
+    }
+
+    function getCurrentConfirmations(task, date = new Date()) {
+      const cycle = task.confirmations && task.confirmations[getCycleKey(task, date)];
+      return cycle && typeof cycle === "object" ? cycle : {};
+    }
+
+    function getTaskStatus(task, date = new Date()) {
+      const confirmations = getCurrentConfirmations(task, date);
+      const done = task.assignees.length > 0 && task.assignees.every(p => Boolean(confirmations[p]));
+      const overdue = task.repeat === "once" && task.date && !done && task.date < toLocalDateKey(date);
+      return { done, overdue, confirmations };
+    }
+
+    function isTaskActive(task, date = new Date()) {
+      if (!task.date) return true;
+      if (task.repeat === "once") return task.date <= toLocalDateKey(date) || getTaskStatus(task, date).done;
+      return task.date <= toLocalDateKey(date);
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return "ohne Datum";
+      const parts = dateString.split("-").map(Number);
+      return new Intl.DateTimeFormat("de-DE", {day:"2-digit",month:"2-digit",year:"numeric"})
+        .format(new Date(parts[0], parts[1] - 1, parts[2]));
+    }
+
+    function formatTimestamp(timestamp) {
+      return new Intl.DateTimeFormat("de-DE", {
+        day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"
+      }).format(new Date(timestamp));
+    }
+
+    function repeatLabel(repeat) {
+      return ({ once:"Einmalig", daily:"Täglich", weekly:"Wöchentlich", monthly:"Monatlich" })[repeat] || "Einmalig";
+    }
+
+    function createAssigneeCheckboxes() {
+      refs.assigneeCheckboxes.innerHTML = FAMILY.map(person => `
+        <label class="check-option">
+          <input type="checkbox" name="assignee" value="${escapeHtml(person)}">
+          <span>${escapeHtml(person)}</span>
+        </label>`).join("");
+    }
+
+    function renderFamilyFilters() {
+      const counts = Object.fromEntries(FAMILY.map(p => [p, 0]));
+      state.tasks.filter(isTaskActive).forEach(task => {
+        if (!getTaskStatus(task).done) task.assignees.forEach(p => { if (p in counts) counts[p]++; });
+      });
+      const totalOpen = state.tasks.filter(t => isTaskActive(t) && !getTaskStatus(t).done).length;
+      const items = [{name:"Alle",count:totalOpen}, ...FAMILY.map(name => ({name,count:counts[name]}))];
+
+      refs.familyFilters.innerHTML = items.map(item => `
+        <button type="button" class="family-filter ${state.personFilter === item.name ? "active" : ""}"
+          data-person="${escapeHtml(item.name)}" aria-pressed="${state.personFilter === item.name}">
+          <span>${escapeHtml(item.name)}</span>
+          <span class="family-count">${item.count}</span>
+        </button>`).join("");
+    }
+
+    function renderSummary() {
+      const active = state.tasks.filter(isTaskActive);
+      const done = active.filter(t => getTaskStatus(t).done).length;
+      refs.openCount.textContent = String(active.length - done);
+      refs.doneCount.textContent = String(done);
+      refs.allCount.textContent = String(active.length);
+    }
+
+    function getFilteredTasks() {
+      return state.tasks
+        .filter(isTaskActive)
+        .filter(t => state.personFilter === "Alle" || t.assignees.includes(state.personFilter))
+        .filter(t => state.statusFilter === "all" || (state.statusFilter === "done" ? getTaskStatus(t).done : !getTaskStatus(t).done))
+        .sort((a,b) => {
+          const sa = getTaskStatus(a), sb = getTaskStatus(b);
+          if (sa.done !== sb.done) return sa.done ? 1 : -1;
+          if (sa.overdue !== sb.overdue) return sa.overdue ? -1 : 1;
+          return (a.date || "9999-12-31").localeCompare(b.date || "9999-12-31") || a.title.localeCompare(b.title, "de");
+        });
+    }
+
+    function renderTasks() {
+      const tasks = getFilteredTasks();
+      if (!tasks.length) {
+        refs.taskList.innerHTML = '<div class="empty-state"><strong>Keine passenden Aufgaben.</strong><br>Ändere den Filter oder lege im Admin-Bereich eine neue Aufgabe an.</div>';
+        return;
+      }
+
+      refs.taskList.innerHTML = tasks.map(task => {
+        const s = getTaskStatus(task);
+        const badge = s.done ? '<span class="badge done">Erledigt</span>' : s.overdue ? '<span class="badge overdue">Überfällig</span>' : '<span class="badge">Offen</span>';
+        const dateText = task.date ? (task.repeat === "once" ? "Fällig: " : "Start: ") + formatDate(task.date) : "Kein festes Datum";
+
+        const persons = task.assignees.map(person => {
+          const ts = s.confirmations[person];
+          return ts ? `
+            <div class="person-state confirmed">
+              <strong>${escapeHtml(person)} ✓</strong>
+              <small>Bestätigt am ${escapeHtml(formatTimestamp(ts))}</small>
+              <button type="button" class="btn-secondary btn-small" data-undo="${escapeHtml(task.id)}" data-person="${escapeHtml(person)}">Bestätigung zurücknehmen</button>
+            </div>` : `
+            <div class="person-state">
+              <strong>${escapeHtml(person)}</strong>
+              <small>Noch nicht bestätigt</small>
+              <button type="button" class="btn-primary btn-small" data-confirm="${escapeHtml(task.id)}" data-person="${escapeHtml(person)}">Als erledigt bestätigen</button>
+            </div>`;
+        }).join("");
+
+        return `
+          <article class="task-card ${s.done ? "done" : ""} ${s.overdue ? "overdue" : ""}">
+            <div class="task-head">
+              <div>
+                <h3 class="task-title">${escapeHtml(task.title)}</h3>
+                <div class="task-meta">
+                  <span>${escapeHtml(repeatLabel(task.repeat))}</span>
+                  <span>${escapeHtml(dateText)}</span>
+                  <span>Verantwortlich: ${escapeHtml(task.assignees.join(", "))}</span>
+                </div>
+              </div>
+              ${badge}
+            </div>
+            <div class="confirmations">
+              <p class="confirmations-title">Bestätigungen</p>
+              <div class="person-actions">${persons}</div>
+            </div>
+          </article>`;
+      }).join("");
+    }
+
+    function renderAdminList() {
+      if (!state.isAdmin) {
+        refs.adminTaskList.innerHTML = "";
+        return;
+      }
+      if (!state.tasks.length) {
+        refs.adminTaskList.innerHTML = '<div class="empty-state">Noch keine Aufgaben angelegt.</div>';
+        return;
+      }
+      refs.adminTaskList.innerHTML = [...state.tasks].sort((a,b) => a.title.localeCompare(b.title, "de")).map(task => `
+        <div class="admin-row">
+          <div>
+            <strong>${escapeHtml(task.title)}</strong>
+            <p>${escapeHtml(repeatLabel(task.repeat))} · ${task.date ? escapeHtml(formatDate(task.date)) : "ohne Datum"} · ${escapeHtml(task.assignees.join(", "))}</p>
+          </div>
+          <div class="admin-row-actions">
+            <button type="button" class="btn-secondary btn-small" data-edit="${escapeHtml(task.id)}">Bearbeiten</button>
+            <button type="button" class="btn-danger btn-small" data-delete="${escapeHtml(task.id)}">Löschen</button>
+          </div>
+        </div>`).join("");
+    }
+
+    function renderAll() {
+      renderFamilyFilters();
+      renderSummary();
+      renderTasks();
+      renderAdminList();
+
+      document.querySelectorAll("[data-status-filter]").forEach(btn => {
+        const active = btn.dataset.statusFilter === state.statusFilter;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-pressed", String(active));
+      });
+
+      refs.adminPanel.classList.toggle("visible", state.isAdmin);
+      refs.logoutButton.hidden = !state.isAdmin;
+      refs.adminButton.hidden = state.isAdmin;
+    }
+
+    function confirmTask(taskId, person) {
+      const task = state.tasks.find(t => t.id === taskId);
+      if (!task || !task.assignees.includes(person)) return;
+      const cycle = getCycleKey(task);
+      task.confirmations ||= {};
+      task.confirmations[cycle] ||= {};
+      if (task.confirmations[cycle][person]) return;
+
+      task.confirmations[cycle][person] = new Date().toISOString();
+      saveTasks();
+      showMessage(getTaskStatus(task).done ? `Geschafft! „${task.title}“ ist vollständig erledigt.` : `${person} hat „${task.title}“ bestätigt.`, "success");
+      renderAll();
+    }
+
+    function undoConfirmation(taskId, person) {
+      const task = state.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      const cycle = getCycleKey(task);
+      if (!task.confirmations?.[cycle]?.[person]) return;
+      if (!window.confirm(`Bestätigung von ${person} für „${task.title}“ zurücknehmen?`)) return;
+
+      delete task.confirmations[cycle][person];
+      saveTasks();
+      showMessage("Bestätigung wurde zurückgenommen.", "success");
+      renderAll();
+    }
+
+    function resetTaskForm() {
+      state.editingTaskId = null;
+      refs.taskForm.reset();
+      refs.formTitle.textContent = "Neue Aufgabe anlegen";
+      refs.saveTaskButton.textContent = "Aufgabe speichern";
+      refs.cancelEditButton.hidden = true;
+      refs.taskRepeat.value = "once";
+    }
+
+    function selectedAssignees() {
+      return [...refs.assigneeCheckboxes.querySelectorAll('input[name="assignee"]:checked')].map(i => i.value);
+    }
+
+    function saveTaskFromForm(event) {
+      event.preventDefault();
+      if (!state.isAdmin) return;
+
+      const title = refs.taskTitle.value.trim();
+      const assignees = selectedAssignees();
+
+      if (!title) {
+        showMessage("Bitte gib einen Namen für die Aufgabe ein.", "error");
+        refs.taskTitle.focus();
+        return;
+      }
+      if (!assignees.length) {
+        showMessage("Bitte wähle mindestens eine verantwortliche Person aus.", "error");
+        return;
+      }
+
+      const values = { title, repeat: refs.taskRepeat.value, date: refs.taskDate.value || "", assignees };
+
+      if (state.editingTaskId) {
+        const task = state.tasks.find(t => t.id === state.editingTaskId);
+        if (!task) return;
+        Object.assign(task, values);
+        if (task.confirmations) {
+          Object.values(task.confirmations).forEach(cycle => {
+            Object.keys(cycle).forEach(person => {
+              if (!task.assignees.includes(person)) delete cycle[person];
+            });
+          });
+        }
+        showMessage("Aufgabe wurde aktualisiert.", "success");
+      } else {
+        state.tasks.push({
+          id: makeId(),
+          ...values,
+          confirmations: {},
+          createdAt: new Date().toISOString()
+        });
+        showMessage("Aufgabe wurde angelegt.", "success");
+      }
+
+      saveTasks();
+      resetTaskForm();
+      renderAll();
+    }
+
+    function editTask(taskId) {
+      const task = state.tasks.find(t => t.id === taskId);
+      if (!task || !state.isAdmin) return;
+      state.editingTaskId = task.id;
+      refs.taskTitle.value = task.title;
+      refs.taskRepeat.value = task.repeat;
+      refs.taskDate.value = task.date || "";
+
+      refs.assigneeCheckboxes.querySelectorAll('input[name="assignee"]').forEach(input => {
+        input.checked = task.assignees.includes(input.value);
+      });
+
+      refs.formTitle.textContent = "Aufgabe bearbeiten";
+      refs.saveTaskButton.textContent = "Änderungen speichern";
+      refs.cancelEditButton.hidden = false;
+      refs.adminPanel.scrollIntoView({behavior:"smooth", block:"start"});
+      refs.taskTitle.focus();
+    }
+
+    function deleteTask(taskId) {
+      const task = state.tasks.find(t => t.id === taskId);
+      if (!task || !state.isAdmin) return;
+      if (!window.confirm(`Aufgabe „${task.title}“ wirklich löschen?`)) return;
+
+      state.tasks = state.tasks.filter(t => t.id !== taskId);
+      saveTasks();
+      if (state.editingTaskId === taskId) resetTaskForm();
+      showMessage("Aufgabe wurde gelöscht.", "success");
+      renderAll();
+    }
+
+    function hasAdminPassword() {
+      return Boolean(localStorage.getItem(ADMIN_PASSWORD_KEY));
+    }
+
+    function openAdminDialog() {
+      const setup = !hasAdminPassword();
+      refs.adminLoginForm.reset();
+      refs.confirmPasswordField.hidden = !setup;
+      refs.adminPasswordConfirm.required = setup;
+      refs.adminDialogTitle.textContent = setup ? "Admin-Passwort festlegen" : "Admin-Zugang";
+      refs.adminSubmitButton.textContent = setup ? "Passwort speichern" : "Anmelden";
+      refs.adminSetupText.innerHTML = setup
+        ? '<p>Beim ersten Start legst du das Eltern-Passwort fest.</p><div class="security-note">Wichtig: Bei einer einzelnen lokalen HTML-Datei ist dieser Schutz nur für den privaten Familiengebrauch gedacht und nicht vollständig sicher.</div>'
+        : '<p>Bitte das Eltern-Passwort eingeben.</p>';
+      refs.adminDialog.showModal();
+      setTimeout(() => refs.adminPassword.focus(), 0);
+    }
+
+    function handleAdminLogin(event) {
+      event.preventDefault();
+      const password = refs.adminPassword.value;
+      const setup = !hasAdminPassword();
+
+      if (setup) {
+        if (password.length < 4) {
+          showMessage("Das Admin-Passwort muss mindestens 4 Zeichen lang sein.", "error");
+          return;
+        }
+        if (password !== refs.adminPasswordConfirm.value) {
+          showMessage("Die beiden Passwörter stimmen nicht überein.", "error");
+          return;
+        }
+        localStorage.setItem(ADMIN_PASSWORD_KEY, password);
+        state.isAdmin = true;
+        refs.adminDialog.close();
+        showMessage("Admin-Passwort gespeichert. Der Admin-Bereich ist geöffnet.", "success");
+        renderAll();
+        return;
+      }
+
+      if (password !== localStorage.getItem(ADMIN_PASSWORD_KEY)) {
+        showMessage("Das Passwort ist nicht korrekt.", "error");
+        refs.adminPassword.select();
+        return;
+      }
+
+      state.isAdmin = true;
+      refs.adminDialog.close();
+      showMessage("Admin-Bereich geöffnet.", "success");
+      renderAll();
+    }
+
+    function bindEvents() {
+      refs.familyFilters.addEventListener("click", event => {
+        const btn = event.target.closest("[data-person]");
+        if (!btn) return;
+        state.personFilter = btn.dataset.person;
+        renderAll();
+      });
+
+      document.querySelector(".filter-group").addEventListener("click", event => {
+        const btn = event.target.closest("[data-status-filter]");
+        if (!btn) return;
+        state.statusFilter = btn.dataset.statusFilter;
+        renderAll();
+      });
+
+      refs.taskList.addEventListener("click", event => {
+        const confirmBtn = event.target.closest("[data-confirm]");
+        if (confirmBtn) {
+          confirmTask(confirmBtn.dataset.confirm, confirmBtn.dataset.person);
+          return;
+        }
+        const undoBtn = event.target.closest("[data-undo]");
+        if (undoBtn) undoConfirmation(undoBtn.dataset.undo, undoBtn.dataset.person);
+      });
+
+      refs.adminTaskList.addEventListener("click", event => {
+        const editBtn = event.target.closest("[data-edit]");
+        if (editBtn) {
+          editTask(editBtn.dataset.edit);
+          return;
+        }
+        const deleteBtn = event.target.closest("[data-delete]");
+        if (deleteBtn) deleteTask(deleteBtn.dataset.delete);
+      });
+
+      refs.taskForm.addEventListener("submit", saveTaskFromForm);
+      refs.cancelEditButton.addEventListener("click", resetTaskForm);
+      refs.adminButton.addEventListener("click", openAdminDialog);
+      refs.logoutButton.addEventListener("click", () => {
+        state.isAdmin = false;
+        resetTaskForm();
+        showMessage("Admin-Bereich wurde beendet.", "info");
+        renderAll();
+      });
+      refs.adminLoginForm.addEventListener("submit", handleAdminLogin);
+      refs.closeAdminDialog.addEventListener("click", () => refs.adminDialog.close());
+    }
+
+    function init() {
+      createAssigneeCheckboxes();
+      loadTasks();
+      refs.todayLabel.textContent = new Intl.DateTimeFormat("de-DE", {
+        weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"
+      }).format(new Date());
+      bindEvents();
+      renderAll();
+    }
+
+    init();
+  </script>
+</body>
+</html>
